@@ -1,0 +1,87 @@
+#!/bin/bash
+# Wrote by Amgad Cyber in 22/10/2022
+# Change Android Display Language to Arabic
+# This Tool is only works if the choosen language already exist and hidden from settings
+# Don't Panic :), It does not need root priviallages
+
+version=1.0
+author="AMGAD CYBER"
+
+echo "Ya LngChanger - $version by $author"
+
+# Tested only in Kali Linux - it should work in all linux distributions
+
+# Default 
+Lang='AR-YE'
+
+
+checkadb(){
+    if [ ! adb ]; then
+        adb devices
+        else
+          echo "Make sure Adb is installed :("
+          exit 1
+    fi
+}
+
+# options
+# Autometic
+autoMethod()
+{
+
+    echo "this script is mainly wrote for android 6 and newer"
+    echo "Make sure your device is connected and usb debugging is enabled and press Enter"
+    read -p "to continue"
+    checkadb
+    sleep 1;
+    adb shell 'setprop ro.product.locale "$Lang"';
+    sleep 1
+    adb shell 'setprop persist.sys.locale "$Lang"';
+    sleep 1
+    adb shell 'setprop ctl.restart zygote';
+}
+
+#  Manual 
+manualMethod()
+{
+    echo "A small Application will be installed in your Device"
+    echo "use this app to change to the language you want"
+    echo "Installing The Required App"
+    if [ -e adbcl.apk ]; then
+        adb install adbcl.apk
+        else 
+          echo "The required App is not in the Directory ;("
+          exit 1
+    fi
+    sleep 3
+    echo "Granting The Required Permission"
+    adb shell 'pm grant net.sanapeli.adbchangelanguage android.permission.CHANGE_CONFIGURATION'
+    sleep 1
+    echo "Launching the app"
+    adb shell monkey -p net.sanapeli.adbchangelanguage -v 500
+    echo "Success! :)"
+    echo "Now, Change to any Language-country you want :)"
+    exit 0;
+}
+
+
+
+
+
+# changing to Arabic Default
+
+option="${1}"
+
+case "$option" in
+   '-a')
+    echo "Autometic Method" 
+    echo "enable usb debuggin in your setting"
+    autoMethod
+   ;;
+   '-m')
+    manualMethod
+    ;;
+    *) default="${0}"
+     echo "'${0}':usage: [-a Auto method] | [-m Manual method] "
+     exit 0
+esac
